@@ -168,3 +168,86 @@
                 <tr><td>Academy Sports</td><td>Retail</td><td class="money">$100.00</td><td class="money">$10.00</td><td class="money">$90.00</td><td>10% off entire purchase</td></tr>
                 <tr><td>Ashley Furniture</td><td>Retail</td><td class="money">$1000.00</td><td class="money">$100.00</td><td class="money">$900.00</td><td>10% off purchase</td></tr>
                 <tr><td>Food Lion</td><td>Retail</td><td class="money">$100.00</td><td class="money">$10.00</td><td class="
+                                                                                                                    
+                                                                                                                    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add sorting functionality to all tables
+            document.querySelectorAll('table thead th').forEach(th => {
+                th.addEventListener('click', () => {
+                    const table = th.closest('table');
+                    const tbody = table.querySelector('tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    const index = Array.from(th.parentNode.children).indexOf(th);
+                    const isNumeric = th.textContent.includes('Price') || 
+                                    th.textContent.includes('Amount') || 
+                                    th.textContent.includes('Discount') ||
+                                    th.textContent.includes('Number');
+                    
+                    // Remove existing sort indicators
+                    th.parentNode.querySelectorAll('th').forEach(header => {
+                        header.classList.remove('sorted-asc', 'sorted-desc');
+                    });
+
+                    // Determine sort direction
+                    const isAscending = !th.classList.contains('sorted-asc');
+                    th.classList.toggle('sorted-asc', isAscending);
+                    th.classList.toggle('sorted-desc', !isAscending);
+
+                    // Sort rows
+                    rows.sort((a, b) => {
+                        let aValue = a.children[index].textContent;
+                        let bValue = b.children[index].textContent;
+                        
+                        if (isNumeric) {
+                            // Remove currency symbols and convert to numbers
+                            aValue = parseFloat(aValue.replace(/[^0-9.-]+/g, ''));
+                            bValue = parseFloat(bValue.replace(/[^0-9.-]+/g, ''));
+                        }
+                        
+                        if (aValue < bValue) return isAscending ? -1 : 1;
+                        if (aValue > bValue) return isAscending ? 1 : -1;
+                        return 0;
+                    });
+
+                    // Reorder rows
+                    tbody.innerHTML = '';
+                    rows.forEach(row => tbody.appendChild(row));
+                });
+            });
+
+            // Add filtering functionality
+            document.querySelectorAll('.table-filter').forEach(input => {
+                input.addEventListener('input', function() {
+                    const tableId = this.getAttribute('data-table');
+                    const table = document.getElementById(tableId);
+                    const rows = table.querySelectorAll('tbody tr');
+                    const searchText = this.value.toLowerCase();
+
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.classList.toggle('hidden', !text.includes(searchText));
+                    });
+                });
+            });
+
+            // Add category filtering
+            document.querySelectorAll('.category-filter').forEach(select => {
+                select.addEventListener('change', function() {
+                    const tableId = this.getAttribute('data-table');
+                    const table = document.getElementById(tableId);
+                    const rows = table.querySelectorAll('tbody tr');
+                    const category = this.value.toLowerCase();
+
+                    rows.forEach(row => {
+                        if (!category) {
+                            row.classList.remove('hidden');
+                        } else {
+                            const rowCategory = row.children[1].textContent.toLowerCase();
+                            row.classList.toggle('hidden', rowCategory !== category);
+                        }
+                    });
+                });
+            });
+        });
+    </script>
